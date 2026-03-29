@@ -54,7 +54,6 @@ class NetworkTool:
     # Q3: What is the benefit of using @property and @target.setter?
     # Using @property and @target.setter helps control how the target value is accessed and changed.
     # It lets us hide the internal attribute but still expose a clean interface to other code.
-    # We can validate new values before saving them, which prevents bad data from entering the object.
     # In this case, it stops the target from being set to an empty string and makes the class safer to use.
     @property
     def target(self):
@@ -72,10 +71,7 @@ class NetworkTool:
 
 # Q1: How does PortScanner reuse code from NetworkTool?
 # PortScanner reuses code from NetworkTool by inheriting from it as a child class.
-# This means PortScanner automatically gets the target attribute, the property, and the setter validation logic.
 # It does not need to rewrite that code, which reduces duplication and keeps the design cleaner.
-# If we ever change how target is handled in NetworkTool, PortScanner will benefit from that change automatically.
-
 
 # TODO: Create the PortScanner child class that inherits from NetworkTool (Step vi)
 # - Constructor: call super().__init__(target), initialize self.scan_results = [], self.lock = threading.Lock()
@@ -89,14 +85,12 @@ class PortScanner(NetworkTool):
     def __del__(self):
         print("PortScanner instance destroyed")
         super().__del__()
+    def scan_port(self, port):
+        sock = None
 
     # Q4: What would happen without try-except here?
     # Without try-except, any socket error during scanning could crash the whole program.
     # For example, a network issue or unreachable host might raise an exception and stop all remaining scans.
-    # Using try-except lets us catch these errors, show a useful message, and continue scanning other ports.
-    # This makes the scanner more robust and user-friendly.
-    def scan_port(self, port):
-        sock = None
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(1)
@@ -125,7 +119,6 @@ class PortScanner(NetworkTool):
 
     # Q2: Why do we use threading instead of scanning one port at a time?
     # We use threading so that multiple ports can be scanned in parallel instead of waiting for each one to finish.
-    # Scanning ports one by one can be very slow, especially if some ports take time to respond or timeout.
     # With threads, each port scan runs in its own thread, which makes the overall scan much faster from the user's perspective.
     # This is especially helpful on slower networks or when scanning larger port ranges.
     def scan_range(self, start_port, end_port):
